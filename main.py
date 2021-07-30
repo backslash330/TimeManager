@@ -6,13 +6,10 @@
 
 # Imports
 import PySimpleGUI as sg
-from datetime import datetime
-from mysql import connector
+from datetime import datetime, timedelta
 import mysql.connector
 from mysql.connector import cursor 
 from mysql.connector.cursor import MySQLCursor
-import time
-import sys
 
 from PySimpleGUI.PySimpleGUI import Combo, DropDown, Text
 
@@ -44,13 +41,12 @@ def main():
         if event == "Sign In":
             sign_in_protocol(values, cursor, mydb)
         if event == "Sign out":
-            sign_out_protocol()
+            sign_out_protocol(values, cursor, mydb)
         if event == "Payroll Hours":   
             payroll_protocol()
         if event == sg.WIN_CLOSED:
             break
     window1.close()
-
 
 def window_1():
     # Input window Layout
@@ -78,13 +74,18 @@ def sign_in_protocol(values, cursor, mydb):
     sql = "SELECT * FROM records WHERE name = (%s) and date = (%s) and signin = (%s)"
     data = (name, date, signin)
     cursor.execute(sql, data)
+    x = None
     mydb.commit()
     for x in cursor:
         print(x)
-    if x is not None:
+    if name == "":
+        sg.popup("Select Name Please")
+    elif x is not None:
         sg.popup("Already Signed In!")
     else:
         time = d.time()
+        time = ceil_dt(time, timedelta(minutes=30))
+        print(time)
         # CHECK IF ALREADY LOGGED IN
         sql = "INSERT INTO records (name, date, time, signin, signout) VALUES (%s, %s, %s, %s, %s)"
         data = (name, date, time, signin, signout)
@@ -95,24 +96,36 @@ def sign_in_protocol(values, cursor, mydb):
         print(data)
         sg.popup("Successfully Logged In!")
 
-def sign_out_protocol():
+def sign_out_protocol(values, cursor, mydb):
     name=""
     for val in values["Employee_Listbox"]:
         name=val
+    signin = 0
+    signout = 1
     d = datetime.now()
     date = d.date()
-    time = d.time()
-    signin = 1
-    signout = 0
-    # CHECK IF ALREADY LOGGED IN
-    sql = "INSERT INTO records (name, date, time, signin, signout) VALUES (%s, %s, %s, %s, %s)"
-    data = (name, date, time, signin, signout)
+    sql = "SELECT * FROM records WHERE name = (%s) and date = (%s) and signout = (%s)"
+    data = (name, date, signout)
     cursor.execute(sql, data)
+    x = None
     mydb.commit()
     for x in cursor:
         print(x)
-    print(data)
-    sg.popup("Successfully Logged Out!")
+    if name == "":
+        sg.popup("Select Name Please")
+    elif x is not None:
+        sg.popup("Already Signed Out!")
+    else:
+        time = d.time()
+        # CHECK IF ALREADY LOGGED IN
+        sql = "INSERT INTO records (name, date, time, signin, signout) VALUES (%s, %s, %s, %s, %s)"
+        data = (name, date, time, signin, signout)
+        cursor.execute(sql, data)
+        mydb.commit()
+        for x in cursor:
+            print(x)
+        print(data)
+        sg.popup("Successfully Logged Out!")
 
 def payroll_protocol():
     data ="2021-07-21"
@@ -127,5 +140,16 @@ def payroll_protocol():
             if event == sg.WIN_CLOSED:
                 break 
 
+def ceil_dt(dt, delta):
+    return dt + (datetime.min - dt) % delta
+
 if __name__ == '__main__':
     main()
+
+
+#TO DO
+# round dates
+# payroll potocol
+# create way for employees to request adjustment 
+# Make adjustments easier?
+# make employee list dynamic
