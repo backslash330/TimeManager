@@ -42,49 +42,11 @@ def main():
     while True:
         event, values  = window1.read()
         if event == "Sign In":
-            name=""
-            for val in values["Employee_Listbox"]:
-                name=val
-            d = datetime.now()
-            date = d.date()
-            time = d.time()
-            # CHECK IF ALREADY LOGGED IN
-            sql = "INSERT INTO records (name, date, time) VALUES (%s, %s, %s)"
-            data = (name, date, time)
-            cursor.execute(sql, data)
-            mydb.commit()
-            for x in cursor:
-                print(x)
-            print(name, date, time)
-            sg.popup("Successfully Logged In!")
+            sign_in_protocol(values, cursor, mydb)
         if event == "Sign out":
-            name=""
-            for val in values["Employee_Listbox"]:
-                name=val
-            d = datetime.now()
-            date = d.date()
-            time = d.time()
-            #CHECK IF ALREADY LOGGED IN 
-            sql = "INSERT INTO records (name, date, time) VALUES (%s, %s, %s)"
-            data = (name, date, time)
-            cursor.execute(sql, data)
-            mydb.commit()
-            for x in cursor:
-                print(x)
-            print(name, date, time)
-            sg.popup("Successfully Logged Out!")
-        if event == "Payroll Hours":
-            data ="2021-07-21"
-            sql = "SELECT * FROM records WHERE date like '{}';".format(data)
-            cursor.execute(sql)
-            print(sql)
-            mydb.commit()
-            for x in cursor:
-                print(x)
-            calendar = calendar_1()
-            while True:
-                    if event == sg.WIN_CLOSED:
-                        break    
+            sign_out_protocol()
+        if event == "Payroll Hours":   
+            payroll_protocol()
         if event == sg.WIN_CLOSED:
             break
     window1.close()
@@ -105,16 +67,65 @@ def window_1():
     ]
     return sg.Window("North Star Automation", layout)
 
-def calendar_1():
-    layout = [
-                [sg.T('Calendar Test')],
-                [sg.In('', size=(20,1))],
-                [sg.CalendarButton('Choose Date', target=(1,0), key='date')],
-                [sg.Ok(key=1)]
-    ]
+def sign_in_protocol(values, cursor, mydb):
+    name=""
+    for val in values["Employee_Listbox"]:
+        name=val
+    signin = 1
+    signout = 0
+    d = datetime.now()
+    date = d.date()
+    sql = "SELECT * FROM records WHERE name = (%s) and date = (%s) and signin = (%s)"
+    data = (name, date, signin)
+    cursor.execute(sql, data)
+    mydb.commit()
+    for x in cursor:
+        print(x)
+    if x is not None:
+        sg.popup("Already Signed In!")
+    else:
+        time = d.time()
+        # CHECK IF ALREADY LOGGED IN
+        sql = "INSERT INTO records (name, date, time, signin, signout) VALUES (%s, %s, %s, %s, %s)"
+        data = (name, date, time, signin, signout)
+        cursor.execute(sql, data)
+        mydb.commit()
+        for x in cursor:
+            print(x)
+        print(data)
+        sg.popup("Successfully Logged In!")
 
-    return sg.Window("Calendar", layout)
+def sign_out_protocol():
+    name=""
+    for val in values["Employee_Listbox"]:
+        name=val
+    d = datetime.now()
+    date = d.date()
+    time = d.time()
+    signin = 1
+    signout = 0
+    # CHECK IF ALREADY LOGGED IN
+    sql = "INSERT INTO records (name, date, time, signin, signout) VALUES (%s, %s, %s, %s, %s)"
+    data = (name, date, time, signin, signout)
+    cursor.execute(sql, data)
+    mydb.commit()
+    for x in cursor:
+        print(x)
+    print(data)
+    sg.popup("Successfully Logged Out!")
 
+def payroll_protocol():
+    data ="2021-07-21"
+    sql = "SELECT * FROM records WHERE date like '{}';".format(data)
+    cursor.execute(sql)
+    print(sql)
+    mydb.commit()
+    for x in cursor:
+        print(x)
+    calendar = calendar_1()
+    while True:
+            if event == sg.WIN_CLOSED:
+                break 
 
 if __name__ == '__main__':
     main()
