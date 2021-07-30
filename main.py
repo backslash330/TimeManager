@@ -7,6 +7,7 @@
 # Imports
 import PySimpleGUI as sg
 from datetime import datetime, timedelta
+import time
 import mysql.connector
 from mysql.connector import cursor 
 from mysql.connector.cursor import MySQLCursor
@@ -43,7 +44,7 @@ def main():
         if event == "Sign out":
             sign_out_protocol(values, cursor, mydb)
         if event == "Payroll Hours":   
-            payroll_protocol()
+            payroll_protocol(values, cursor, mydb)
         if event == sg.WIN_CLOSED:
             break
     window1.close()
@@ -84,8 +85,6 @@ def sign_in_protocol(values, cursor, mydb):
         sg.popup("Already Signed In!")
     else:
         time = d.time()
-        time = ceil_dt(time, timedelta(minutes=30))
-        print(time)
         # CHECK IF ALREADY LOGGED IN
         sql = "INSERT INTO records (name, date, time, signin, signout) VALUES (%s, %s, %s, %s, %s)"
         data = (name, date, time, signin, signout)
@@ -127,21 +126,37 @@ def sign_out_protocol(values, cursor, mydb):
         print(data)
         sg.popup("Successfully Logged Out!")
 
-def payroll_protocol():
-    data ="2021-07-21"
-    sql = "SELECT * FROM records WHERE date like '{}';".format(data)
+def payroll_protocol(values, cursor, mydb):
+    date ="2021-07-30"
+    sql = "SELECT time FROM records WHERE date like '{}' and signin=1;".format(date)
     cursor.execute(sql)
-    print(sql)
     mydb.commit()
     for x in cursor:
-        print(x)
-    calendar = calendar_1()
-    while True:
-            if event == sg.WIN_CLOSED:
-                break 
+        signin_time = x
+    signin_time_string = ''.join(signin_time)
+    signin_time_final = date + " " + signin_time_string
+    signin_datetime_object = datetime.strptime(signin_time_final, "%Y-%m-%d %H:%M:%S.%f")
+    print(signin_datetime_object)
 
-def ceil_dt(dt, delta):
-    return dt + (datetime.min - dt) % delta
+    date ="2021-07-30"
+    sql = "SELECT time FROM records WHERE date like '{}' and signout=1;".format(date)
+    cursor.execute(sql)
+    mydb.commit()
+    for x in cursor:
+        signout_time = x
+    signout_time_string = ''.join(signout_time)
+    signout_time_final = date + " " + signout_time_string
+    signout_datetime_object = datetime.strptime(signout_time_final, "%Y-%m-%d %H:%M:%S.%f")
+    print(signout_datetime_object)
+
+    diff = signout_datetime_object - signin_datetime_object
+
+    days, seconds = diff.days, diff.seconds
+    hours = days * 24 + seconds // 3600
+    minutes = (seconds % 3600) // 60
+    seconds = seconds % 60
+
+    print("Nick Worked ",hours,minutes,seconds)
 
 if __name__ == '__main__':
     main()
