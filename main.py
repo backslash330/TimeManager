@@ -57,10 +57,14 @@ def window_1():
                 [sg.Listbox(values=["Nick","Albert","Norm","Kabel"], size=(10,10), key="Employee_Listbox")],
                 [sg.Button("Sign In")],
                 [sg.Button("Sign out")],
+                [sg.Text("Payroll Start Date(KEEP FORMATTING AS BELOW)")],
+                [sg.Input("2020-12-01", key='-start-')],
+                [sg.Text("Payroll End Date(KEEP FORMATTING AS BELOW)")],
+                [sg.Input("2020-12-31", key='-end-')],
                 [sg.Button("Payroll Hours")],
                 [sg.Button("Request Hours Adjustment")],
                 [sg.Button("Change Employee Settings")],
-                [sg.Button("Add Employee")]
+                [sg.Button("Add Employee")],
     ]
     return sg.Window("North Star Automation", layout)
 
@@ -127,6 +131,22 @@ def sign_out_protocol(values, cursor, mydb):
         sg.popup("Successfully Logged Out!")
 
 def payroll_protocol(values, cursor, mydb):
+    start = values['-start-']
+    end = values['-end-']
+    start_datetime_object = datetime.strptime(start, "%Y-%m-%d")
+    end_datetime_object = datetime.strptime(end, "%Y-%m-%d")
+    day = timedelta(days=1)
+    while start_datetime_object <= end_datetime_object:
+        payroll_dates = start_datetime_object.date()
+        print(str(payroll_dates))
+        start_datetime_object = start_datetime_object + day
+
+
+
+
+
+
+
     date ="2021-07-30"
     sql = "SELECT time FROM records WHERE date like '{}' and signin=1;".format(date)
     cursor.execute(sql)
