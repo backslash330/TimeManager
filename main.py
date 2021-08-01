@@ -131,15 +131,15 @@ def sign_out_protocol(values, cursor, mydb):
         sg.popup("Successfully Logged Out!")
 
 def payroll_protocol(values, cursor, mydb):
-    start = values['-start-']
-    end = values['-end-']
-    start_datetime_object = datetime.strptime(start, "%Y-%m-%d")
-    end_datetime_object = datetime.strptime(end, "%Y-%m-%d")
+    start_input = values['-start-']
+    end_input = values['-end-']
+    start = datetime.strptime(start_input, "%Y-%m-%d")
+    end = datetime.strptime(end_input, "%Y-%m-%d")
     day = timedelta(days=1)
-    while start_datetime_object <= end_datetime_object:
-        payroll_dates = start_datetime_object.date()
+    while start <= end:
+        payroll_dates = start.date()
         print(str(payroll_dates))
-        start_datetime_object = start_datetime_object + day
+        start = start + day
 
 
 
