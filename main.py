@@ -137,47 +137,40 @@ def payroll_protocol(values, cursor, mydb):
     end = datetime.strptime(end_input, "%Y-%m-%d")
     day = timedelta(days=1)
     while start <= end:
-        payroll_dates = start.date()
-        print(str(payroll_dates))
+        payroll_dates = str(start.date())
+
+       # date ="2021-07-30"
+        sql = "SELECT time FROM records WHERE date like '{}' and signin=1;".format(payroll_dates)
+        cursor.execute(sql)
+        mydb.commit()
+        for x in cursor:
+            signin_time = x
+        signin_time_string = ''.join(signin_time)
+        signin_time_final = date + " " + signin_time_string
+        signin_datetime_object = datetime.strptime(signin_time_final, "%Y-%m-%d %H:%M:%S.%f")
+        print(signin_datetime_object)
+
+       # date ="2021-07-30"
+        sql = "SELECT time FROM records WHERE date like '{}' and signout=1;".format(payroll_dates)
+        cursor.execute(sql)
+        mydb.commit()
+        for x in cursor:
+            signout_time = x
+        signout_time_string = ''.join(signout_time)
+        signout_time_final = date + " " + signout_time_string
+        signout_datetime_object = datetime.strptime(signout_time_final, "%Y-%m-%d %H:%M:%S.%f")
+        print(signout_datetime_object)
+
+        diff = signout_datetime_object - signin_datetime_object
+
+        days, seconds = diff.days, diff.seconds
+        hours = days * 24 + seconds // 3600
+        minutes = (seconds % 3600) // 60
+        seconds = seconds % 60
+
+        print("Nick Worked ",hours,minutes,seconds)
+
         start = start + day
-
-
-
-
-
-
-
-    date ="2021-07-30"
-    sql = "SELECT time FROM records WHERE date like '{}' and signin=1;".format(date)
-    cursor.execute(sql)
-    mydb.commit()
-    for x in cursor:
-        signin_time = x
-    signin_time_string = ''.join(signin_time)
-    signin_time_final = date + " " + signin_time_string
-    signin_datetime_object = datetime.strptime(signin_time_final, "%Y-%m-%d %H:%M:%S.%f")
-    print(signin_datetime_object)
-
-    date ="2021-07-30"
-    sql = "SELECT time FROM records WHERE date like '{}' and signout=1;".format(date)
-    cursor.execute(sql)
-    mydb.commit()
-    for x in cursor:
-        signout_time = x
-    signout_time_string = ''.join(signout_time)
-    signout_time_final = date + " " + signout_time_string
-    signout_datetime_object = datetime.strptime(signout_time_final, "%Y-%m-%d %H:%M:%S.%f")
-    print(signout_datetime_object)
-
-    diff = signout_datetime_object - signin_datetime_object
-
-    days, seconds = diff.days, diff.seconds
-    hours = days * 24 + seconds // 3600
-    minutes = (seconds % 3600) // 60
-    seconds = seconds % 60
-
-    print("Nick Worked ",hours,minutes,seconds)
-
 if __name__ == '__main__':
     main()
 
