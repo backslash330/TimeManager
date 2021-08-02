@@ -139,25 +139,32 @@ def payroll_protocol(values, cursor, mydb):
     while start <= end:
         payroll_dates = str(start.date())
 
-       # date ="2021-07-30"
+        date ="2021-07-30"
         sql = "SELECT time FROM records WHERE date like '{}' and signin=1;".format(payroll_dates)
         cursor.execute(sql)
         mydb.commit()
+        # needs saftey
+        if cursor == None:
+            start = start + day
+            continue
         for x in cursor:
             signin_time = x
         signin_time_string = ''.join(signin_time)
-        signin_time_final = date + " " + signin_time_string
+        signin_time_final = payroll_dates + " " + signin_time_string
         signin_datetime_object = datetime.strptime(signin_time_final, "%Y-%m-%d %H:%M:%S.%f")
-        print(signin_datetime_object)
 
-       # date ="2021-07-30"
+        date ="2021-07-30"
         sql = "SELECT time FROM records WHERE date like '{}' and signout=1;".format(payroll_dates)
+        print(sql)
         cursor.execute(sql)
         mydb.commit()
+        if cursor == None:
+            start = start + day
+            continue
         for x in cursor:
             signout_time = x
         signout_time_string = ''.join(signout_time)
-        signout_time_final = date + " " + signout_time_string
+        signout_time_final = payroll_dates + " " + signout_time_string
         signout_datetime_object = datetime.strptime(signout_time_final, "%Y-%m-%d %H:%M:%S.%f")
         print(signout_datetime_object)
 
@@ -171,6 +178,9 @@ def payroll_protocol(values, cursor, mydb):
         print("Nick Worked ",hours,minutes,seconds)
 
         start = start + day
+
+
+
 if __name__ == '__main__':
     main()
 
